@@ -151,123 +151,33 @@ Good evening. JARVIS is ready.
 </div>
 
 <script>
+async function sendMessage() {
+  const input = document.getElementById("message");
+  const chat = document.getElementById("chat");
 
-const button = document.getElementById("talk");
-const output = document.getElementById("output");
-const status = document.getElementById("status");
+  const text = input.value.trim();
+  if (!text) return;
 
-const SpeechRecognition =
-    window.SpeechRecognition ||
-    window.webkitSpeechRecognition;
+  chat.innerHTML += `<div class="user">You: ${text}</div>`;
+  input.value = "";
 
-if (!SpeechRecognition) {
+  const res = await fetch("https://openaiworker.f5zcftzj8k.workers.dev", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ message: text })
+  });
 
-    output.innerText =
-        "Voice recognition isn't supported in this browser.";
+  const data = await res.json();
 
-} else {
-
-    const recognition = new SpeechRecognition();
-
-    recognition.lang = "en-AU";
-    recognition.continuous = false;
-    recognition.interimResults = false;
-
-    button.onclick = () => {
-
-        status.innerText = "LISTENING...";
-        status.classList.add("listening");
-
-        recognition.start();
-
-    };
-
-    recognition.onresult = (event) => {
-
-        const command =
-            event.results[0][0].transcript;
-
-        output.innerText =
-            "You: " + command;
-
-        respond(command);
-
-    };
-
-    recognition.onerror = () => {
-
-        status.innerText = "SYSTEM ONLINE";
-        status.classList.remove("listening");
-
-        output.innerText =
-            "I couldn't hear that. Try again.";
-
-    };
-
-    recognition.onend = () => {
-
-        status.innerText = "SYSTEM ONLINE";
-        status.classList.remove("listening");
-
-    };
+  chat.innerHTML += `<div class="bot">AI: ${data.reply}</div>`;
+  chat.scrollTop = chat.scrollHeight;
 }
-
-function respond(command) {
-
-    command = command.toLowerCase();
-
-    let response;
-
-    if (command.includes("hello") ||
-        command.includes("hi")) {
-
-        response =
-            "Hello. JARVIS is online and ready.";
-
-    } else if (command.includes("your name")) {
-
-        response =
-            "My name is JARVIS. Just A Rather Very Intelligent System.";
-
-    } else if (command.includes("time")) {
-
-        response =
-            "The current time is " +
-            new Date().toLocaleTimeString("en-AU");
-
-    } else if (command.includes("date")) {
-
-        response =
-            "Today is " +
-            new Date().toLocaleDateString("en-AU");
-
-    } else {
-
-        response =
-            "I heard you say: " + command +
-            ". My AI core isn't connected yet.";
-
-    }
-
-    output.innerText = response;
-
-    speak(response);
-}
-
-function speak(text) {
-
-    const speech =
-        new SpeechSynthesisUtterance(text);
-
-    speech.lang = "en-AU";
-    speech.rate = 0.9;
-    speech.pitch = 0.8;
-
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(speech);
-}
-
 </script>
+
+
+
 
 </body>
 </html>
